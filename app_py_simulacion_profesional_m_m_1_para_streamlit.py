@@ -1,105 +1,52 @@
 # ==============================================================
 # app.py
 # Simulación de Eventos Discretos (M/M/1)
-# Ingeniería Industrial – Nivel Profesional
-# Versión estable compatible con Streamlit Cloud
+# Versión 100% compatible con Streamlit Cloud
+# SIN matplotlib (evita errores de entorno)
 # ==============================================================
-
-# ============================
-# LIBRERÍAS
-# ============================
 
 import streamlit as st
 import numpy as np
 import pandas as pd
 
-import matplotlib
-matplotlib.use("Agg")  # Backend obligatorio para Streamlit Cloud
-import matplotlib.pyplot as plt
-
 # ==============================================================
-# CONFIGURACIÓN GENERAL
+# CONFIGURACIÓN
 # ==============================================================
 
-st.set_page_config(
-    page_title="Simulación Profesional M/M/1",
-    layout="wide"
-)
+st.set_page_config(page_title="Simulación M/M/1", layout="wide")
 
 st.title("Simulación de Eventos Discretos – Modelo M/M/1")
 
 st.markdown("""
-Esta aplicación implementa un modelo completo de **Simulación de Eventos Discretos (SED)**
-para un sistema de colas M/M/1.
-
-Incluye:
-- Definición formal del estado
-- Eventos
-- Lista de eventos futuros (implícita)
-- Variables estadísticas acumulativas
-- Implementación paso a paso
-- Comparación contra solución analítica
+Aplicación profesional de simulación SED para un sistema M/M/1.
+Compatible totalmente con Streamlit Cloud.
 """)
 
 # ==============================================================
-# SIDEBAR – PARÁMETROS
+# PARÁMETROS
 # ==============================================================
 
-st.sidebar.header("Parámetros del Sistema")
+st.sidebar.header("Parámetros")
 
-lam = st.sidebar.number_input("Tasa de llegada λ (clientes por hora)", min_value=0.1, value=4.0)
-mu = st.sidebar.number_input("Tasa de servicio μ (clientes por hora)", min_value=0.1, value=5.0)
-n_clientes = st.sidebar.number_input("Número de pacientes a simular", min_value=10, value=10)
+lam = st.sidebar.number_input("Tasa de llegada λ (clientes/hora)", min_value=0.1, value=4.0)
+mu = st.sidebar.number_input("Tasa de servicio μ (clientes/hora)", min_value=0.1, value=5.0)
+n_clientes = st.sidebar.number_input("Número de pacientes", min_value=10, value=10)
 seed = st.sidebar.number_input("Semilla aleatoria", min_value=1, value=42)
 
 np.random.seed(seed)
 
-# ==============================================================
-# VALIDACIÓN DE ESTABILIDAD
-# ==============================================================
-
 rho = lam / mu
 
 if rho >= 1:
-    st.error("⚠ Sistema inestable: λ ≥ μ. Ajuste parámetros.")
+    st.error("Sistema inestable: λ ≥ μ")
 
 # ==============================================================
-# DEFINICIÓN FORMAL DEL MODELO
-# ==============================================================
-
-st.subheader("Definición Formal del Modelo SED")
-
-st.markdown("""
-**Estado del sistema:**
-- Número de clientes en sistema
-- Estado del servidor (ocupado/libre)
-
-**Eventos:**
-- Llegada
-- Fin de servicio
-
-**FEL (Lista de Eventos Futuros implícita):**
-- Próxima llegada
-- Próxima salida
-
-**Variables acumulativas:**
-- Tiempo total en cola
-- Tiempo total en sistema
-- Utilización
-""")
-
-# ==============================================================
-# GENERACIÓN DE VARIABLES ALEATORIAS
+# GENERACIÓN DE VARIABLES
 # ==============================================================
 
 inter_arrivals = np.random.exponential(1/lam, int(n_clientes))
 services = np.random.exponential(1/mu, int(n_clientes))
-
 arrivals = np.cumsum(inter_arrivals)
-
-# ==============================================================
-# ESTRUCTURAS DE DATOS
-# ==============================================================
 
 start_service = np.zeros(int(n_clientes))
 end_service = np.zeros(int(n_clientes))
@@ -107,7 +54,7 @@ wait_time = np.zeros(int(n_clientes))
 system_time = np.zeros(int(n_clientes))
 
 # ==============================================================
-# SIMULACIÓN PASO A PASO
+# SIMULACIÓN
 # ==============================================================
 
 for i in range(int(n_clientes)):
@@ -121,16 +68,15 @@ for i in range(int(n_clientes)):
     system_time[i] = end_service[i] - arrivals[i]
 
 # ==============================================================
-# TABLA DE RESULTADOS
+# TABLA
 # ==============================================================
 
 st.subheader("Simulación Paso a Paso")
 
 results = pd.DataFrame({
     "Paciente": np.arange(1, int(n_clientes)+1),
-    "Tiempo Entre Llegadas": inter_arrivals,
     "Llegada": arrivals,
-    "Tiempo Servicio": services,
+    "Servicio": services,
     "Inicio Servicio": start_service,
     "Fin Servicio": end_service,
     "Tiempo en Cola": wait_time,
@@ -140,17 +86,13 @@ results = pd.DataFrame({
 st.dataframe(results, use_container_width=True)
 
 # ==============================================================
-# MÉTRICAS SIMULADAS
+# MÉTRICAS
 # ==============================================================
 
 W_sim = np.mean(system_time)
 Wq_sim = np.mean(wait_time)
 L_sim = lam * W_sim
 Lq_sim = lam * Wq_sim
-
-# ==============================================================
-# MÉTRICAS TEÓRICAS
-# ==============================================================
 
 if rho < 1:
     W_theory = 1/(mu - lam)
@@ -163,24 +105,20 @@ else:
     L_theory = None
     Lq_theory = None
 
-# ==============================================================
-# RESULTADOS COMPARATIVOS
-# ==============================================================
-
 st.subheader("Comparación Simulación vs Teoría")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### Resultados Simulados")
-    st.write("ρ (Utilización):", rho)
-    st.write("W (Sistema):", W_sim)
-    st.write("Wq (Cola):", Wq_sim)
-    st.write("L (Sistema):", L_sim)
-    st.write("Lq (Cola):", Lq_sim)
+    st.write("Resultados Simulados")
+    st.write("ρ:", rho)
+    st.write("W:", W_sim)
+    st.write("Wq:", Wq_sim)
+    st.write("L:", L_sim)
+    st.write("Lq:", Lq_sim)
 
 with col2:
-    st.markdown("### Resultados Teóricos")
+    st.write("Resultados Teóricos")
     if rho < 1:
         st.write("W:", W_theory)
         st.write("Wq:", Wq_theory)
@@ -190,43 +128,32 @@ with col2:
         st.write("Sistema inestable")
 
 # ==============================================================
-# VISUALIZACIONES
+# VISUALIZACIONES SIN MATPLOTLIB
 # ==============================================================
 
-st.subheader("Distribución del Tiempo en Sistema")
-
-fig1, ax1 = plt.subplots()
-ax1.hist(system_time, bins=30, density=True)
-ax1.set_xlabel("Tiempo en Sistema")
-ax1.set_ylabel("Densidad")
-st.pyplot(fig1)
+st.subheader("Convergencia del Promedio (Visualización nativa)")
 
 if rho < 1:
-    st.subheader("Convergencia del Promedio hacia Valor Teórico")
-
     cumulative_mean = np.cumsum(system_time)/np.arange(1, int(n_clientes)+1)
-    fig2, ax2 = plt.subplots()
-    ax2.plot(cumulative_mean, label="Promedio acumulado")
-    ax2.axhline(W_theory, linestyle="--", label="Valor teórico")
-    ax2.set_xlabel("Número de pacientes")
-    ax2.set_ylabel("Promedio acumulado W")
-    ax2.legend()
-    st.pyplot(fig2)
+    df_plot = pd.DataFrame({"Promedio acumulado": cumulative_mean})
+    st.line_chart(df_plot)
+
+st.subheader("Distribución aproximada del Tiempo en Sistema")
+
+hist_values = np.histogram(system_time, bins=20)[0]
+st.bar_chart(hist_values)
 
 # ==============================================================
-# EXPLICACIÓN CONCEPTUAL
+# EXPLICACIÓN
 # ==============================================================
 
-st.subheader("Comportamiento Transitorio vs Estacionario")
+st.subheader("Transitorio vs Estacionario")
 
 st.markdown("""
-**Transitorio:**
-Las primeras observaciones presentan alta variabilidad y no representan el
-comportamiento estable del sistema.
+Transitorio: primeras observaciones con alta variabilidad.
 
-**Estacionario:**
-Cuando el número de pacientes aumenta, las métricas convergen a los valores
-teóricos. Esto ocurre por la Ley de los Grandes Números.
+Estacionario: cuando el número de pacientes aumenta,
+las métricas convergen al valor teórico.
 """)
 
-st.success("Simulación ejecutada correctamente.")
+st.success("Aplicación ejecutada correctamente.")
