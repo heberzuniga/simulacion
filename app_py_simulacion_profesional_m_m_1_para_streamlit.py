@@ -2,16 +2,19 @@
 # app.py
 # Simulación de Eventos Discretos (M/M/1)
 # Ingeniería Industrial – Nivel Profesional
-# Lista para desplegar en Streamlit Cloud
+# Versión estable compatible con Streamlit Cloud
 # ==============================================================
 
 # ============================
-# LIBRERÍAS NECESARIAS
+# LIBRERÍAS
 # ============================
 
 import streamlit as st
 import numpy as np
 import pandas as pd
+
+import matplotlib
+matplotlib.use("Agg")  # Backend obligatorio para Streamlit Cloud
 import matplotlib.pyplot as plt
 
 # ==============================================================
@@ -24,6 +27,7 @@ st.set_page_config(
 )
 
 st.title("Simulación de Eventos Discretos – Modelo M/M/1")
+
 st.markdown("""
 Esta aplicación implementa un modelo completo de **Simulación de Eventos Discretos (SED)**
 para un sistema de colas M/M/1.
@@ -46,8 +50,8 @@ st.sidebar.header("Parámetros del Sistema")
 lam = st.sidebar.number_input("Tasa de llegada λ (clientes por hora)", min_value=0.1, value=4.0)
 mu = st.sidebar.number_input("Tasa de servicio μ (clientes por hora)", min_value=0.1, value=5.0)
 n_clientes = st.sidebar.number_input("Número de pacientes a simular", min_value=10, value=10)
-
 seed = st.sidebar.number_input("Semilla aleatoria", min_value=1, value=42)
+
 np.random.seed(seed)
 
 # ==============================================================
@@ -222,7 +226,7 @@ comportamiento estable del sistema.
 
 **Estacionario:**
 Cuando el número de pacientes aumenta, las métricas convergen a los valores
-teóricos. Esto es consecuencia de la Ley de los Grandes Números.
+teóricos. Esto ocurre por la Ley de los Grandes Números.
 """)
 
 st.success("Simulación ejecutada correctamente.")
