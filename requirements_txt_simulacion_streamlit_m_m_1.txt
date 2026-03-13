@@ -1,0 +1,10 @@
+# ======================================================
+# requirements.txt
+# Dependencias necesarias para ejecutar app.py
+# Simulación de Eventos Discretos M/M/1
+# ======================================================
+
+streamlit==1.32.2
+numpy==1.26.4
+pandas==2.2.2
+matplotlib==3.8.4
